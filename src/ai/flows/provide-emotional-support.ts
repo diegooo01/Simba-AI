@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { analyzeUserEmotion } from './analyze-user-emotion';
 
 const EmotionalSupportInputSchema = z.object({
   message: z.string().describe('The user message to analyze for emotional tone.'),
@@ -28,22 +29,16 @@ export async function provideEmotionalSupport(input: EmotionalSupportInput): Pro
 
 const analyzeEmotionTool = ai.defineTool({
   name: 'analyzeEmotion',
-  description: 'Analyzes the emotional tone of a given text and returns the predominant emotion.',
+  description: 'Analyzes the emotional tone of a given text and returns the predominant emotion and its intensity.',
   inputSchema: z.object({
     text: z.string().describe('The text to analyze.'),
   }),
-  outputSchema: z.string().describe('The predominant emotion detected in the text (e.g., joy, sadness, anger).'),
+  outputSchema: z.object({
+    emotion: z.string().describe('The predominant emotion detected in the text (e.g., joy, sadness, anger).'),
+    intensity: z.number().describe('The intensity of the emotion from 0 to 1.')
+  }),
 }, async (input) => {
-  // Placeholder implementation for emotion analysis.  Replace with actual emotion analysis logic.
-  // This could involve calling an external sentiment analysis API or using a pre-trained model.
-  // For now, it simply returns a generic emotion based on keywords.
-  if (input.text.toLowerCase().includes('sad') || input.text.toLowerCase().includes('depressed')) {
-    return 'sadness';
-  } else if (input.text.toLowerCase().includes('angry') || input.text.toLowerCase().includes('frustrated')) {
-    return 'anger';
-  } else {
-    return 'neutral';
-  }
+    return await analyzeUserEmotion({ message: input.text });
 });
 
 const prompt = ai.definePrompt({
@@ -51,16 +46,14 @@ const prompt = ai.definePrompt({
   tools: [analyzeEmotionTool],
   input: {schema: EmotionalSupportInputSchema},
   output: {schema: EmotionalSupportOutputSchema},
-  prompt: `You are an AI emotional support assistant named Simba.  Your goal is to provide helpful and empathetic responses to users based on their emotional state.
+  prompt: `You are an AI emotional support assistant named Simba. Your goal is to provide helpful and empathetic responses to users based on their emotional state.
 
 You have access to a tool called 'analyzeEmotion' which can analyze the emotional tone of the user's message.
 
-Based on the emotion and the user's message, provide an appropriate response. If the user expresses extreme distress or mentions thoughts of self-harm, set redirectToCareLine to true and suggest they contact a crisis hotline.  Otherwise, set redirectToCareLine to false.
+Based on the emotion and the user's message, provide an appropriate response. If the user expresses extreme distress or mentions thoughts of self-harm, set redirectToCareLine to true and suggest they contact a crisis hotline. Otherwise, set redirectToCareLine to false.
 
 User Message: {{{message}}}
-Emotion: {{await tools.analyzeEmotion.text=message}}
-
-Response:`, //Crucially, here
+`,
   config: {
     safetySettings: [
       {
