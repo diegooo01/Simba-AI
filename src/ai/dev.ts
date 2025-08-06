@@ -1,1 +1,5 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/provide-emotional-support.ts';
+import '@/ai/flows/analyze-user-emotion.ts';
