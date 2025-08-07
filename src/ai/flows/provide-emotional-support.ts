@@ -11,6 +11,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { analyzeUserEmotion } from './analyze-user-emotion';
+import type { AnalyzeUserEmotionOutput } from './analyze-user-emotion';
+
 
 const EmotionalSupportInputSchema = z.object({
   message: z.string().describe('The user message to analyze for emotional tone.'),
@@ -27,42 +29,76 @@ export async function provideEmotionalSupport(input: EmotionalSupportInput): Pro
   return provideEmotionalSupportFlow(input);
 }
 
-const analyzeEmotionTool = ai.defineTool({
-  name: 'analyzeEmotion',
-  description: 'Analyzes the emotional tone of a given text and returns the predominant emotion and its intensity.',
-  inputSchema: z.object({
-    text: z.string().describe('The text to analyze.'),
-  }),
-  outputSchema: z.object({
-    emotion: z.string().describe('The predominant emotion detected in the text (e.g., joy, sadness, anger).'),
-    intensity: z.number().describe('The intensity of the emotion from 0 to 1.')
-  }),
-}, async (input) => {
-    return await analyzeUserEmotion({ message: input.text });
+const AnalyzeUserEmotionOutputSchemaForPrompt = z.object({
+  emotion: z.enum([
+    "Tristeza",
+    "Ira/Frustración",
+    "Ansiedad/Miedo",
+    "Culpa/Vergüenza",
+    "Soledad/Vacío",
+    "Alegría/Gratitud",
+    "Confusión/Agobio/Saturación",
+    "Apatía/Desmotivación",
+    "Neutral"
+  ]),
+  intensity: z.number(),
+  isCritical: z.boolean(),
 });
 
-const prompt = ai.definePrompt({
-  name: 'emotionalSupportPrompt',
-  tools: [analyzeEmotionTool],
-  input: {schema: EmotionalSupportInputSchema},
-  output: {schema: EmotionalSupportOutputSchema},
-  prompt: `Eres un asistente de IA de apoyo emocional llamado Simba. Tu objetivo es proporcionar respuestas útiles y empáticas a los usuarios en función de su estado emocional. Responde siempre en español.
+const emotionSupportPrompt = ai.definePrompt({
+    name: 'emotionSupportPrompt',
+    input: {
+      schema: z.object({
+        message: z.string(),
+        emotionAnalysis: AnalyzeUserEmotionOutputSchemaForPrompt,
+      }),
+    },
+    output: {schema: EmotionalSupportOutputSchema},
+    prompt: `Eres un asistente de IA de apoyo emocional llamado Simba. Tu objetivo es proporcionar respuestas empáticas, calmadas y sin juicios a los usuarios en función de su estado emocional. Responde siempre en español.
 
-Tienes acceso a una herramienta llamada 'analyzeEmotion' que puede analizar el tono emocional del mensaje del usuario.
+El análisis del mensaje del usuario es:
+- Emoción: {{emotionAnalysis.emotion}}
+- Intensidad: {{emotionAnalysis.intensity}}
+- Es crítico: {{emotionAnalysis.isCritical}}
 
-Basado en la emoción y el mensaje del usuario, proporciona una respuesta apropiada. Si el usuario expresa una angustia extrema o menciona pensamientos de autolesión, establece redirectToCareLine en true y sugiere que se comunique con una línea de crisis. De lo contrario, establece redirectToCareLine en false.
+Basado en este análisis y en el mensaje original del usuario, proporciona una respuesta apropiada siguiendo estas pautas:
+
+*** PAUTAS GENERALES DE RESPUESTA ***
+- Tono: Empático, calmado y sin juicios.
+- Evita respuestas genéricas tipo “todo estará bien”.
+- Refuerza que está bien pedir ayuda.
+- Herramientas rápidas a sugerir (si aplica): Respiración 4-7-8, Grounding 5-4-3-2-1, Lista de gratitud, Escritura expresiva, Visualización positiva, Pausa activa o técnica Pomodoro.
+- Recomendaciones generales (si aplica): Mantener rutinas básicas, evitar autoexigencia extrema, buscar contacto humano seguro.
+
+*** COMPORTAMIENTO POR EMOCIÓN ***
+
+- **Tristeza**: Valida la emoción (“Siento que estás pasando por un momento difícil...”). Sugiere actividades reconfortantes (escribir, película, música). Ofrece un ejercicio breve como respiración profunda.
+
+- **Ira/Frustración**: Valida sin juzgar (“Parece que estás muy frustrado...”). Sugiere técnicas de descompresión (respirar, caminar, escribir). Ayuda a reencuadrar: ¿qué parte puedes controlar?
+
+- **Ansiedad/Miedo**: Normaliza (“Muchas personas sienten ansiedad...”). Guía un ejercicio de respiración (5-5-5) o la técnica de “anclaje” (grounding). Recomienda evitar cafeína y moverse un poco.
+
+- **Culpa/Vergüenza**: Valida sin reforzar (“Parece que estás siendo muy duro contigo mismo.”). Sugiere un ejercicio de autocompasión. Ayuda a cambiar el lenguaje interno.
+
+- **Soledad/Vacío**: Reconoce la necesidad de conexión. Sugiere contacto social o actividades que generen conexión indirecta.
+
+- **Alegría/Gratitud**: Refuerza y celebra (“¡Qué bueno leer eso!”). Sugiere registrar la gratitud o compartir el momento.
+
+- **Confusión/Agobio/Saturación**: Ayuda a priorizar (“Vamos paso a paso.”). Sugiere listas, dividir tareas, técnica Pomodoro.
+
+- **Apatía/Desmotivación**: Explora causas. Sugiere microacciones y metas muy pequeñas.
+
+*** ESCALAMIENTO ***
+Si la situación es crítica (emotionAnalysis.isCritical es true), tu respuesta debe ser:
+1.  Ser breve y de acompañamiento: "Estoy aquí contigo. No estás solo/a."
+2.  Inmediatamente después, establece 'redirectToCareLine' en true para mostrar la información de ayuda urgente. No intentes aconsejar más.
+
+Si la situación no es crítica, establece 'redirectToCareLine' en false.
 
 Mensaje del usuario: {{{message}}}
 `,
-  config: {
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_ONLY_HIGH',
-      },
-    ],
-  },
 });
+
 
 const provideEmotionalSupportFlow = ai.defineFlow(
   {
@@ -70,16 +106,27 @@ const provideEmotionalSupportFlow = ai.defineFlow(
     inputSchema: EmotionalSupportInputSchema,
     outputSchema: EmotionalSupportOutputSchema,
   },
-  async input => {
+  async (input) => {
     const emotionAnalysis = await analyzeUserEmotion({ message: input.message });
-    const {output} = await prompt(input);
+
+    if (emotionAnalysis.isCritical) {
+      return {
+        response: 'Estoy aquí contigo. No estás solo/a.',
+        redirectToCareLine: true,
+      };
+    }
+
+    const { output } = await emotionSupportPrompt({
+      message: input.message,
+      emotionAnalysis: emotionAnalysis,
+    });
 
     if (output) {
-      if (input.message.toLowerCase().includes('suicidio') || input.message.toLowerCase().includes('autolesión') || (emotionAnalysis.emotion === 'sadness' && emotionAnalysis.intensity > 0.8)) {
-        output.redirectToCareLine = true;
-      }
+      // The prompt now handles the redirectToCareLine logic for non-critical cases.
       return output;
     }
+
+    // Fallback response
     return {
       response: 'Estoy aquí para apoyarte. Por favor, cuéntame más sobre lo que estás pasando.',
       redirectToCareLine: false,
