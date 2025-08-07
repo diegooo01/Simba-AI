@@ -4,14 +4,13 @@
  * @fileOverview This file implements the Genkit flow for providing emotional support based on user message analysis.
  *
  * - provideEmotionalSupport - A function that provides emotional support based on the emotional tone of user messages.
- * - EmotionalSupportInput - The input type for the provideEmotionalSupport function.
+ * - EmotionalSupportInput - The input type for the provideEmotionalsupport function.
  * - EmotionalSupportOutput - The return type for the provideEmotionalSupport function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { analyzeUserEmotion } from './analyze-user-emotion';
-import type { AnalyzeUserEmotionOutput } from './analyze-user-emotion';
+import { analyzeUserEmotion, type AnalyzeUserEmotionOutput } from './analyze-user-emotion';
 
 
 const EmotionalSupportInputSchema = z.object({
@@ -29,28 +28,26 @@ export async function provideEmotionalSupport(input: EmotionalSupportInput): Pro
   return provideEmotionalSupportFlow(input);
 }
 
-const AnalyzeUserEmotionOutputSchemaForPrompt = z.object({
-  emotion: z.enum([
-    "Tristeza",
-    "Ira/Frustración",
-    "Ansiedad/Miedo",
-    "Culpa/Vergüenza",
-    "Soledad/Vacío",
-    "Alegría/Gratitud",
-    "Confusión/Agobio/Saturación",
-    "Apatía/Desmotivación",
-    "Neutral"
-  ]),
-  intensity: z.number(),
-  isCritical: z.boolean(),
-});
-
 const emotionSupportPrompt = ai.definePrompt({
     name: 'emotionSupportPrompt',
     input: {
       schema: z.object({
         message: z.string(),
-        emotionAnalysis: AnalyzeUserEmotionOutputSchemaForPrompt,
+        emotionAnalysis: z.object({
+          emotion: z.enum([
+            "Tristeza",
+            "Ira/Frustración",
+            "Ansiedad/Miedo",
+            "Culpa/Vergüenza",
+            "Soledad/Vacío",
+            "Alegría/Gratitud",
+            "Confusión/Agobio/Saturación",
+            "Apatía/Desmotivación",
+            "Neutral"
+          ]),
+          intensity: z.number(),
+          isCritical: z.boolean(),
+        }),
       }),
     },
     output: {schema: EmotionalSupportOutputSchema},
@@ -107,7 +104,7 @@ const provideEmotionalSupportFlow = ai.defineFlow(
     outputSchema: EmotionalSupportOutputSchema,
   },
   async (input) => {
-    const emotionAnalysis = await analyzeUserEmotion({ message: input.message });
+    const emotionAnalysis: AnalyzeUserEmotionOutput = await analyzeUserEmotion({ message: input.message });
 
     if (emotionAnalysis.isCritical) {
       return {
@@ -122,7 +119,6 @@ const provideEmotionalSupportFlow = ai.defineFlow(
     });
 
     if (output) {
-      // The prompt now handles the redirectToCareLine logic for non-critical cases.
       return output;
     }
 
