@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bot, User, Settings, Target, Send, Loader2, Menu, MessageSquare, LifeBuoy } from 'lucide-react';
+import { Bot, User, Settings, Send, Loader2, Menu, MessageSquare, LifeBuoy, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -113,10 +113,12 @@ const SidebarContent = () => {
         <h1 className="text-3xl font-bold">Simba</h1>
       </div>
       <nav className="flex flex-col gap-2">
-        <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
-          <Target className="h-5 w-5" />
-          Objetivos
-        </Button>
+        <Link href="/reports" passHref>
+            <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
+                <FileText className="h-5 w-5" />
+                Reportes
+            </Button>
+        </Link>
         <Link href="/help-channels" passHref>
           <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
             <LifeBuoy className="h-5 w-5" />
@@ -226,7 +228,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen w-full bg-background">
-      <aside className="hidden w-72 flex-shrink-0 border-r md:block">
+      <aside className="hidden w-72 flex-shrink-0 border-r bg-muted/40 md:block">
         <SidebarContent />
       </aside>
 
