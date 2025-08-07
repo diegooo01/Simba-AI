@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bot, User, Settings, Target, Send, Loader2, Menu, MessageSquare } from 'lucide-react';
+import { Bot, User, Settings, Target, Send, Loader2, Menu, MessageSquare, LifeBuoy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -117,10 +117,12 @@ const SidebarContent = () => {
           <Target className="h-5 w-5" />
           Objetivos
         </Button>
-        <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
-          <User className="h-5 w-5" />
-          Mi Perfil
-        </Button>
+        <Link href="/help-channels" passHref>
+          <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
+            <LifeBuoy className="h-5 w-5" />
+            Canales de Ayuda
+          </Button>
+        </Link>
         <Link href="/settings" passHref>
           <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
             <Settings className="h-5 w-5" />
