@@ -46,13 +46,13 @@ const prompt = ai.definePrompt({
   tools: [analyzeEmotionTool],
   input: {schema: EmotionalSupportInputSchema},
   output: {schema: EmotionalSupportOutputSchema},
-  prompt: `You are an AI emotional support assistant named Simba. Your goal is to provide helpful and empathetic responses to users based on their emotional state.
+  prompt: `Eres un asistente de IA de apoyo emocional llamado Simba. Tu objetivo es proporcionar respuestas útiles y empáticas a los usuarios en función de su estado emocional. Responde siempre en español.
 
-You have access to a tool called 'analyzeEmotion' which can analyze the emotional tone of the user's message.
+Tienes acceso a una herramienta llamada 'analyzeEmotion' que puede analizar el tono emocional del mensaje del usuario.
 
-Based on the emotion and the user's message, provide an appropriate response. If the user expresses extreme distress or mentions thoughts of self-harm, set redirectToCareLine to true and suggest they contact a crisis hotline. Otherwise, set redirectToCareLine to false.
+Basado en la emoción y el mensaje del usuario, proporciona una respuesta apropiada. Si el usuario expresa una angustia extrema o menciona pensamientos de autolesión, establece redirectToCareLine en true y sugiere que se comunique con una línea de crisis. De lo contrario, establece redirectToCareLine en false.
 
-User Message: {{{message}}}
+Mensaje del usuario: {{{message}}}
 `,
   config: {
     safetySettings: [
@@ -71,15 +71,17 @@ const provideEmotionalSupportFlow = ai.defineFlow(
     outputSchema: EmotionalSupportOutputSchema,
   },
   async input => {
+    const emotionAnalysis = await analyzeUserEmotion({ message: input.message });
     const {output} = await prompt(input);
+
     if (output) {
-      if (input.message.toLowerCase().includes('suicide') || input.message.toLowerCase().includes('self-harm')) {
+      if (input.message.toLowerCase().includes('suicidio') || input.message.toLowerCase().includes('autolesión') || (emotionAnalysis.emotion === 'sadness' && emotionAnalysis.intensity > 0.8)) {
         output.redirectToCareLine = true;
       }
       return output;
     }
     return {
-      response: 'I am here to support you. Please tell me more about what you are going through.',
+      response: 'Estoy aquí para apoyarte. Por favor, cuéntame más sobre lo que estás pasando.',
       redirectToCareLine: false,
     };
   }

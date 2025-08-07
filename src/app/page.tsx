@@ -21,18 +21,24 @@ interface Message {
 const CareLineMessage = () => (
   <Alert variant="destructive" className="max-w-md bg-transparent border-0 text-destructive-foreground p-0">
     <Bot className="h-4 w-4" />
-    <AlertTitle>Support is available</AlertTitle>
+    <AlertTitle>El apoyo está disponible</AlertTitle>
     <AlertDescription>
-      It sounds like you are going through a difficult time. Please consider reaching out for support.
-      <br />
-      <a
-        href="https://psicologia.uniandes.edu.co/en/consulting-center"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-semibold underline"
-      >
-        UNIANDES Psychology Consulting Center
-      </a>
+      <p>Parece que estás pasando por un momento difícil. Por favor, considera buscar apoyo.</p>
+      <p className="mt-2">
+        Puedes contactar al{' '}
+        <a
+          href="https://cienciassociales.uniandes.edu.co/centro-de-atencion-psicologica/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline"
+        >
+          Centro de Atención Psicológica de UNIANDES
+        </a>
+        .
+      </p>
+      <p className="mt-2">
+        En Bogotá, para emergencias psicológicas puedes marcar la <strong>Línea 106</strong> ("El poder de ser escuchado"), disponible 24 horas. También puedes llamar al <strong>123</strong> para emergencias generales. Adicionalmente, la <strong>Línea Púrpura (018000112137)</strong> está disponible para mujeres que necesitan apoyo psicológico.
+      </p>
     </AlertDescription>
   </Alert>
 );
@@ -126,7 +132,7 @@ export default function Home() {
     {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm Simba, your emotional support companion. How are you feeling today?",
+      content: "¡Hola! Soy Simba, tu compañero de apoyo emocional. ¿Cómo te sientes hoy?",
     },
   ]);
   const [input, setInput] = useState('');
@@ -160,8 +166,8 @@ export default function Home() {
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'An error occurred',
-        description: 'Failed to get a response. Please try again.',
+        title: 'Ocurrió un error',
+        description: 'No se pudo obtener una respuesta. Por favor, inténtalo de nuevo.',
       });
     } finally {
       setIsLoading(false);
@@ -205,7 +211,7 @@ export default function Home() {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Share what's on your mind..."
+              placeholder="Comparte lo que tienes en mente..."
               className="min-h-[50px] resize-none rounded-2xl pr-20 text-base"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
