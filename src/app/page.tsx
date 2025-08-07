@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, type FormEvent } from 'react';
-import { Bot, User, Settings, Target, Send, Loader2, Menu } from 'lucide-react';
+import Link from 'next/link';
+import { Bot, User, Settings, Target, Send, Loader2, Menu, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getSimbaResponse } from '@/app/actions';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -37,7 +39,7 @@ const CareLineMessage = () => (
         .
       </p>
       <p className="mt-2">
-        En Bogotá, para emergencias psicológicas puedes marcar la <strong>Línea 106</strong> ("El poder de ser escuchado"), disponible 24 horas. También puedes llamar al <strong>123</strong> para emergencias generales. Adicionalmente, la <strong>Línea Púrpura (018000112137)</strong> está disponible para mujeres que necesitan apoyo psicológico.
+        En Bogotá, para emergencias psicológicas puedes marcar la <strong>Línea 106</strong> ("El poder de ser escuchado"), disponible 24 horas. También puedes llamar al <strong>123</strong> para emergencias generales. Adicionalmente, la <strong>Línea Púrpura (018000112137)</strong> está disponible para mujeres que necesiten apoyo psicológico.
       </p>
     </AlertDescription>
   </Alert>
@@ -93,39 +95,67 @@ const LoadingMessage = () => (
   </div>
 );
 
-const SidebarContent = () => (
-  <div className="flex h-full flex-col bg-muted/40 p-4 text-foreground">
-    <div className="mb-8 flex items-center gap-2">
-      <Bot className="h-8 w-8 text-primary" />
-      <h1 className="text-3xl font-bold">Simba</h1>
-    </div>
-    <nav className="flex flex-col gap-2">
-      <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
-        <Target className="h-5 w-5" />
-        Objetivos
-      </Button>
-      <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
-        <User className="h-5 w-5" />
-        Mi Perfil
-      </Button>
-      <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
-        <Settings className="h-5 w-5" />
-        Configuración
-      </Button>
-    </nav>
-    <div className="mt-auto">
-      <div className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent/50">
-        <Avatar>
-          <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" data-ai-hint="person portrait" />
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-        <div>
-          <p className="font-semibold">Usuario</p>
+const SidebarContent = () => {
+  const previousChats = [
+    'Conversación sobre ansiedad',
+    'Charla de la semana pasada',
+    'Reflexiones de hoy',
+  ];
+
+  return (
+    <div className="flex h-full flex-col bg-muted/40 p-4 text-foreground">
+      <div className="mb-8 flex items-center gap-2">
+        <Bot className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold">Simba</h1>
+      </div>
+      <nav className="flex flex-col gap-2">
+        <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
+          <Target className="h-5 w-5" />
+          Objetivos
+        </Button>
+        <Button variant="ghost" className="justify-start gap-3 px-3 text-base">
+          <User className="h-5 w-5" />
+          Mi Perfil
+        </Button>
+        <Link href="/settings" passHref>
+          <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
+            <Settings className="h-5 w-5" />
+            Configuración
+          </Button>
+        </Link>
+      </nav>
+
+      <Separator className="my-4" />
+
+      <div className="flex-1 overflow-y-auto">
+        <h2 className="mb-2 px-3 text-lg font-semibold tracking-tight">
+          Chats Anteriores
+        </h2>
+        <div className="space-y-1 p-0">
+           {previousChats.map((chat, index) => (
+             <Button key={index} variant="ghost" className="w-full justify-start gap-3 px-3 font-normal">
+                <MessageSquare className="h-4 w-4" />
+                {chat}
+             </Button>
+           ))}
+        </div>
+      </div>
+      
+      <div className="mt-auto">
+        <div className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent/50">
+          <Avatar>
+            <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" data-ai-hint="person portrait" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold">Usuario</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
+
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
@@ -173,6 +203,20 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+  
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const theme = localStorage.getItem('theme');
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    const fontSize = localStorage.getItem('fontSize');
+    if (fontSize) {
+      root.style.fontSize = fontSize;
+    }
+  }, []);
 
   return (
     <div className="flex h-screen w-full bg-background">
