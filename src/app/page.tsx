@@ -58,7 +58,7 @@ const ChatMessage = ({ message }: { message: Message }) => {
     <div className={cn('flex items-start gap-4', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
         <Avatar className="h-10 w-10 border">
-          <AvatarImage src="https://placehold.co/40x40.png" alt="Simba" data-ai-hint="golden retriever animated" />
+          <AvatarImage src="https://i.ibb.co/N21MZy4/simba-logo.png" alt="Simba" />
           <AvatarFallback className="bg-accent text-accent-foreground">
             <Bot />
           </AvatarFallback>
@@ -87,7 +87,7 @@ const ChatMessage = ({ message }: { message: Message }) => {
 const LoadingMessage = () => (
   <div className="flex items-start gap-4 justify-start">
     <Avatar className="h-10 w-10 border">
-      <AvatarImage src="https://placehold.co/40x40.png" alt="Simba" data-ai-hint="golden retriever animated" />
+      <AvatarImage src="https://i.ibb.co/N21MZy4/simba-logo.png" alt="Simba" />
       <AvatarFallback className="bg-accent text-accent-foreground">
         <Bot />
       </AvatarFallback>
@@ -108,7 +108,7 @@ const SidebarContent = () => {
   return (
     <div className="flex h-full flex-col bg-muted/40 p-4 text-foreground">
       <div className="mb-8 flex items-center gap-2">
-        <Image src="https://placehold.co/40x40.png" alt="Simba Logo" width={40} height={40} className="rounded-full" data-ai-hint="golden retriever animated" />
+        <Image src="https://i.ibb.co/N21MZy4/simba-logo.png" alt="Simba Logo" width={40} height={40} className="rounded-full" />
         <h1 className="text-3xl font-bold">Simba</h1>
       </div>
       <nav className="flex flex-col gap-2">
