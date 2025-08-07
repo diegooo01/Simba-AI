@@ -7,5 +7,6 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       return require('cypress-plugin-tab/src/plugin')(on, config)
     },
+    supportFile: 'cypress/support/e2e.js'
   },
 })
