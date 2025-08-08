@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, type FormEvent } from 'react';
@@ -15,6 +14,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/context/language-context';
+import { getWelcomeMessage, getCareLineMessage } from '@/lib/translations';
 
 interface Message {
   id: string;
@@ -29,30 +30,21 @@ interface Conversation {
     messages: Message[];
 }
 
-const CareLineMessage = () => (
-  <Alert variant="destructive" className="max-w-md bg-transparent border-0 text-destructive-foreground p-0">
-    <Bot className="h-4 w-4" />
-    <AlertTitle>El apoyo está disponible</AlertTitle>
-    <AlertDescription>
-      <p>Parece que estás pasando por un momento difícil. Por favor, considera buscar apoyo.</p>
-      <p className="mt-2">
-        Puedes contactar al{' '}
-        <a
-          href="https://cienciassociales.uniandes.edu.co/centro-de-atencion-psicologica/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold underline"
-        >
-          Centro de Atención Psicológica de UNIANDES
-        </a>
-        .
-      </p>
-      <p className="mt-2">
-        En Bogotá, para emergencias psicológicas puedes marcar la <strong>Línea 106</strong> ("El poder de ser escuchado"), disponible 24 horas. También puedes llamar al <strong>123</strong> para emergencias generales. Adicionalmente, la <strong>Línea Púrpura (018000112137)</strong> está disponible para mujeres que necesiten apoyo psicológico.
-      </p>
-    </AlertDescription>
-  </Alert>
-);
+const CareLineMessage = () => {
+    const { t } = useLanguage();
+    const careLineContent = getCareLineMessage(t);
+    return (
+        <Alert variant="destructive" className="max-w-md bg-transparent border-0 text-destructive-foreground p-0">
+            <Bot className="h-4 w-4" />
+            <AlertTitle>{careLineContent.title}</AlertTitle>
+            <AlertDescription>
+                <p>{careLineContent.description}</p>
+                <p className="mt-2" dangerouslySetInnerHTML={{ __html: careLineContent.uniandes }} />
+                <p className="mt-2" dangerouslySetInnerHTML={{ __html: careLineContent.bogota }} />
+            </AlertDescription>
+        </Alert>
+    );
+};
 
 const ChatMessage = ({ message }: { message: Message }) => {
   const isUser = message.role === 'user';
@@ -107,6 +99,7 @@ const LoadingMessage = () => (
 );
 
 const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { conversations: Conversation[], onSelectConversation: (id: string) => void, onNewChat: () => void }) => {
+    const { t } = useLanguage();
   return (
     <div className="flex h-full flex-col bg-muted/40 p-4 text-foreground">
       <div className="mb-4 flex items-center justify-between">
@@ -114,7 +107,7 @@ const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { co
             <Image src="/simba-logo.png" alt="Simba Logo" width={40} height={40} className="rounded-full" />
             <h1 className="text-3xl font-bold">Simba</h1>
         </div>
-        <Button size="icon" variant="outline" className="rounded-full h-9 w-9" onClick={onNewChat} aria-label="Nuevo chat">
+        <Button size="icon" variant="outline" className="rounded-full h-9 w-9" onClick={onNewChat} aria-label={t('sidebar.newChat')}>
             <Plus className="h-5 w-5"/>
         </Button>
       </div>
@@ -122,19 +115,19 @@ const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { co
         <Link href="/reports" passHref>
             <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
                 <FileText className="h-5 w-5" />
-                Reportes
+                {t('sidebar.reports')}
             </Button>
         </Link>
         <Link href="/help-channels" passHref>
           <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
             <LifeBuoy className="h-5 w-5" />
-            Canales de Ayuda
+            {t('sidebar.helpChannels')}
           </Button>
         </Link>
         <Link href="/settings" passHref>
           <Button variant="ghost" className="w-full justify-start gap-3 px-3 text-base">
             <Settings className="h-5 w-5" />
-            Configuración
+            {t('sidebar.settings')}
           </Button>
         </Link>
       </nav>
@@ -143,7 +136,7 @@ const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { co
 
       <div className="flex-1 overflow-y-auto">
         <h2 className="mb-2 px-3 text-lg font-semibold tracking-tight">
-          Chats Anteriores
+          {t('sidebar.pastChats')}
         </h2>
         <div className="space-y-1 p-0">
            {conversations.map((chat) => (
@@ -162,7 +155,7 @@ const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { co
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold">Usuario</p>
+            <p className="font-semibold">{t('sidebar.user')}</p>
           </div>
         </div>
       </div>
@@ -170,13 +163,14 @@ const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { co
   );
 };
 
-const LanguageSelector = ({ language, setLanguage }: { language: string, setLanguage: (lang: string) => void }) => {
+const LanguageSelector = () => {
+    const { language, setLanguage, t } = useLanguage();
     const languages = [
-        { code: 'Español', name: 'Español' },
-        { code: 'English', name: 'English' },
-        { code: 'Français', name: 'Français' },
-        { code: 'Português', name: 'Português' },
-        { code: '中文', name: '中文' },
+        { code: 'es', name: 'Español' },
+        { code: 'en', name: 'English' },
+        { code: 'fr', name: 'Français' },
+        { code: 'pt', name: 'Português' },
+        { code: 'zh', name: '中文' },
     ];
 
     return (
@@ -184,7 +178,7 @@ const LanguageSelector = ({ language, setLanguage }: { language: string, setLang
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
                     <Globe className="h-[1.2rem] w-[1.2rem]" />
-                    <span className="sr-only">Seleccionar idioma</span>
+                    <span className="sr-only">{t('common.selectLanguage')}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -199,26 +193,20 @@ const LanguageSelector = ({ language, setLanguage }: { language: string, setLang
 };
 
 
-const createNewConversation = (language: string): Conversation => {
-    const welcomeMessages: Record<string, string> = {
-        'Español': '¡Hola! Soy Simba, tu compañero de apoyo emocional. ¿Cómo te sientes hoy?',
-        'English': 'Hello! I am Simba, your emotional support companion. How are you feeling today?',
-        'Français': 'Bonjour! Je suis Simba, ton compagnon de soutien émotionnel. Comment te sens-tu aujourd\'hui?',
-        'Português': 'Olá! Eu sou o Simba, seu companheiro de apoio emocional. Como você está se sentindo hoje?',
-        '中文': '你好！我是辛巴，你的情感支持伙伴。你今天感觉怎么样？',
-    };
+const createNewConversation = (lang: string): Conversation => {
     return {
         id: Date.now().toString(),
-        title: 'Nueva Conversación',
+        title: 'New Conversation',
         messages: [{
             id: '1',
             role: 'assistant',
-            content: welcomeMessages[language] || welcomeMessages['English'],
+            content: getWelcomeMessage(lang),
         }],
     }
 };
 
 export default function Home() {
+  const { language, t } = useLanguage();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [input, setInput] = useState('');
@@ -226,12 +214,10 @@ export default function Home() {
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [language, setLanguage] = useState('Español');
 
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('simba-language') || 'Español';
-    setLanguage(savedLanguage);
+    const savedLanguage = localStorage.getItem('simba-language') || 'es';
     
     try {
         const savedConversations = localStorage.getItem('simba-chats');
@@ -264,25 +250,35 @@ export default function Home() {
     }
   }, [conversations, isMounted]);
 
+  // Update conversation title and welcome message on language change
+  useEffect(() => {
+    if (!activeConversationId || !isMounted) return;
+
+    setConversations(prev => prev.map(conv => {
+        if (conv.id === activeConversationId) {
+            const newTitle = conv.messages.length <= 1 ? t('chat.newConversation') : conv.title;
+            const updatedMessages = conv.messages.map((msg, index) => {
+                if (index === 0 && msg.role === 'assistant') {
+                    return { ...msg, content: getWelcomeMessage(language) };
+                }
+                return msg;
+            });
+            return { ...conv, title: newTitle, messages: updatedMessages };
+        }
+        return conv;
+    }));
+  }, [language, t, activeConversationId, isMounted]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeConversationId, isLoading]);
-
-  const handleSetLanguage = (lang: string) => {
-    setLanguage(lang);
-    if(isMounted) {
-        localStorage.setItem('simba-language', lang);
-    }
-    // Optionally create a new chat when language is changed
-    handleNewChat(lang);
-  };
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
   };
 
-  const handleNewChat = (lang = language) => {
-    const newConv = createNewConversation(lang);
+  const handleNewChat = () => {
+    const newConv = createNewConversation(language);
     setConversations(prev => [newConv, ...prev]);
     setActiveConversationId(newConv.id);
   };
@@ -292,7 +288,7 @@ export default function Home() {
           if (conv.id === conversationId) {
               const isNewChat = conv.messages.length <= 1 && newMessages.some(m => m.role === 'user');
               const newTitle = isNewChat 
-                  ? newMessages.find(m => m.role === 'user')?.content.substring(0, 30) || 'Conversación'
+                  ? newMessages.find(m => m.role === 'user')?.content.substring(0, 30) || t('chat.newConversation')
                   : conv.title;
               return { ...conv, title: newTitle, messages: newMessages };
           }
@@ -331,8 +327,8 @@ export default function Home() {
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Ocurrió un error',
-        description: 'No se pudo obtener una respuesta. Por favor, inténtalo de nuevo.',
+        title: t('chat.errorTitle'),
+        description: t('chat.errorDescription'),
       });
       // Rollback user message on error
       updateConversationMessages(activeConversationId, activeConversation.messages);
@@ -355,19 +351,19 @@ export default function Home() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Abrir menú">
+                <Button variant="ghost" size="icon" aria-label={t('sidebar.openMenu')}>
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0">
-                <SheetTitle className="sr-only">Menú</SheetTitle>
+                <SheetTitle className="sr-only">{t('sidebar.menu')}</SheetTitle>
                 <SidebarContent conversations={conversations} onSelectConversation={handleSelectConversation} onNewChat={handleNewChat} />
               </SheetContent>
             </Sheet>
           </div>
           <p className="text-lg font-semibold md:hidden">Simba</p>
           <div className="ml-auto">
-            <LanguageSelector language={language} setLanguage={handleSetLanguage} />
+            <LanguageSelector />
           </div>
         </header>
 
@@ -384,7 +380,7 @@ export default function Home() {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Comparte lo que tienes en mente..."
+              placeholder={t('chat.placeholder')}
               className="min-h-[50px] resize-none rounded-2xl pr-20 text-base"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -399,7 +395,7 @@ export default function Home() {
               size="icon"
               className="absolute bottom-2.5 right-3 h-10 w-10 rounded-full"
               disabled={isLoading || !input.trim() || !isMounted}
-              aria-label="Enviar mensaje"
+              aria-label={t('chat.sendMessage')}
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

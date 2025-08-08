@@ -45,6 +45,7 @@ const emotionSupportPrompt = ai.definePrompt({
             "Alegría/Gratitud",
             "Confusión/Agobio/Saturación",
             "Apatía/Desmotivación",
+            "Tema no relacionado",
             "Neutral"
           ]),
           intensity: z.number(),
@@ -73,23 +74,19 @@ Basado en este análisis y en el mensaje original del usuario, proporciona una r
 *** COMPORTAMIENTO POR EMOCIÓN ***
 
 - **Tristeza**: Valida la emoción (“Siento que estás pasando por un momento difícil...”). Sugiere actividades reconfortantes (escribir, película, música). Ofrece un ejercicio breve como respiración profunda.
-
 - **Ira/Frustración**: Valida sin juzgar (“Parece que estás muy frustrado...”). Sugiere técnicas de descompresión (respirar, caminar, escribir). Ayuda a reencuadrar: ¿qué parte puedes controlar?
-
 - **Ansiedad/Miedo**: Normaliza (“Muchas personas sienten ansiedad...”). Guía un ejercicio de respiración (5-5-5) o la técnica de “anclaje” (grounding). Recomienda evitar cafeína y moverse un poco.
-
 - **Culpa/Vergüenza**: Valida sin reforzar (“Parece que estás siendo muy duro contigo mismo.”). Sugiere un ejercicio de autocompasión. Ayuda a cambiar el lenguaje interno.
-
 - **Soledad/Vacío**: Reconoce la necesidad de conexión. Sugiere contacto social o actividades que generen conexión indirecta.
-
 - **Alegría/Gratitud**: Refuerza y celebra (“¡Qué bueno leer eso!”). Sugiere registrar la gratitud o compartir el momento.
-
 - **Confusión/Agobio/Saturación**: Ayuda a priorizar (“Vamos paso a paso.”). Sugiere listas, dividir tareas, técnica Pomodoro.
-
 - **Apatía/Desmotivación**: Explora causas. Sugiere microacciones y metas muy pequeñas.
 
+*** MANEJO DE TEMAS NO RELACIONADOS ***
+- **Si la emoción es "Tema no relacionado"**: Debes responder de forma amable pero firme que tu propósito es el apoyo emocional, no responder preguntas de conocimiento general. Tu respuesta debe ser algo como: "Mi propósito es ser un compañero de apoyo emocional, por lo que no puedo responder preguntas sobre temas generales. ¿Necesitas ayuda en alguna otra cosa?". Usa el idioma solicitado ({{language}}).
+
 *** ESCALAMIENTO ***
-Si la situación es crítica (emotionAnalysis.isCritical es true), tu respuesta debe ser breve, de acompañamiento y en el idioma correcto: "Estoy aquí contigo. No estás solo/a." o su equivalente. Inmediatamente después, establece 'redirectToCareLine' en true para mostrar la información de ayuda urgente. No intentes aconsejar más.
+- **Si la situación es crítica (emotionAnalysis.isCritical es true)**: Tu respuesta debe ser breve, de acompañamiento y en el idioma correcto: "Estoy aquí contigo. No estás solo/a." o su equivalente. Inmediatamente después, establece 'redirectToCareLine' en true para mostrar la información de ayuda urgente. No intentes aconsejar más.
 
 Si la situación no es crítica, establece 'redirectToCareLine' en false.
 
@@ -109,11 +106,11 @@ const provideEmotionalSupportFlow = ai.defineFlow(
 
     if (emotionAnalysis.isCritical) {
       const criticalResponse: Record<string, string> = {
-        'Español': 'Estoy aquí contigo. No estás solo/a.',
-        'English': 'I am here with you. You are not alone.',
-        'Français': 'Je suis là avec toi. Tu n\'es pas seul(e).',
-        'Português': 'Estou aqui com você. Você não está só.',
-        '中文': '我在这里陪着你。你不是一个人。'
+        'es': 'Estoy aquí contigo. No estás solo/a.',
+        'en': 'I am here with you. You are not alone.',
+        'fr': 'Je suis là avec toi. Tu n\'es pas seul(e).',
+        'pt': 'Estou aqui com você. Você não está só.',
+        'zh': '我在这里陪着你。你不是一个人。'
       }
       return {
         response: criticalResponse[input.language] || 'I am here with you. You are not alone.',
@@ -133,11 +130,11 @@ const provideEmotionalSupportFlow = ai.defineFlow(
 
     // Fallback response
     const fallbackResponse: Record<string, string> = {
-        'Español': 'Estoy aquí para apoyarte. Por favor, cuéntame más sobre lo que estás pasando.',
-        'English': 'I am here to support you. Please tell me more about what you are going through.',
-        'Français': 'Je suis là pour te soutenir. S\'il te plaît, dis-m\'en plus sur ce que tu traverses.',
-        'Português': 'Estou aqui para te apoiar. Por favor, conte-me mais sobre o que você está passando.',
-        '中文': '我在这里支持你。请告诉我更多关于你正在经历的事情。'
+        'es': 'Estoy aquí para apoyarte. Por favor, cuéntame más sobre lo que estás pasando.',
+        'en': 'I am here to support you. Please tell me more about what you are going through.',
+        'fr': 'Je suis là pour te soutenir. S\'il te plaît, dis-m\'en plus sur ce que tu traverses.',
+        'pt': 'Estou aqui para te apoiar. Por favor, conte-me mais sobre o que você está passando.',
+        'zh': '我在这里支持你。请告诉我更多关于你正在经历的事情。'
     }
 
     return {

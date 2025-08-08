@@ -7,13 +7,16 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Moon, Sun, Type } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/language-context';
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState('16px');
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const root = window.document.documentElement;
     const initialTheme = localStorage.getItem('theme');
     const initialFontSize = localStorage.getItem('fontSize') || '16px';
@@ -29,7 +32,6 @@ export default function SettingsPage() {
     root.style.fontSize = initialFontSize;
     setFontSize(initialFontSize);
 
-    setIsMounted(true);
   }, []);
 
   const toggleDarkMode = (checked: boolean) => {
@@ -47,7 +49,7 @@ export default function SettingsPage() {
   }
 
   if (!isMounted) {
-    return null;
+    return null; // or a loading skeleton
   }
 
   return (
@@ -56,26 +58,26 @@ export default function SettingsPage() {
         <Link href="/">
           <Button variant="outline" size="icon" className="h-8 w-8">
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Volver</span>
+            <span className="sr-only">{t('common.back')}</span>
           </Button>
         </Link>
-        <h1 className="text-xl font-semibold">Configuración</h1>
+        <h1 className="text-xl font-semibold">{t('settings.title')}</h1>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-10">
         <div className="mx-auto grid w-full max-w-6xl gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Accesibilidad y Preferencias</CardTitle>
+              <CardTitle>{t('settings.cardTitle')}</CardTitle>
               <CardDescription>
-                Personaliza la apariencia y el comportamiento de la aplicación para que se adapte a tus necesidades.
+                {t('settings.cardDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="flex items-center justify-between">
                 <Label htmlFor="dark-mode" className="flex flex-col gap-1">
-                  <span>Modo Noche</span>
+                  <span>{t('settings.darkMode.label')}</span>
                   <span className="font-normal leading-snug text-muted-foreground">
-                    Activa un tema oscuro para reducir la fatiga visual.
+                    {t('settings.darkMode.description')}
                   </span>
                 </Label>
                 <div className="flex items-center gap-2">
@@ -84,28 +86,28 @@ export default function SettingsPage() {
                         id="dark-mode"
                         checked={isDarkMode}
                         onCheckedChange={toggleDarkMode}
-                        aria-label="Activar modo noche"
+                        aria-label={t('settings.darkMode.ariaLabel')}
                     />
                     <Moon className="h-5 w-5"/>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="font-size" className="flex flex-col gap-1">
-                  <span>Tamaño de Fuente</span>
+                  <span>{t('settings.fontSize.label')}</span>
                    <span className="font-normal leading-snug text-muted-foreground">
-                    Ajusta el tamaño del texto para una mejor legibilidad.
+                    {t('settings.fontSize.description')}
                   </span>
                 </Label>
                  <div className="flex items-center gap-2">
                     <Type className="h-4 w-4"/>
                     <Button variant={fontSize === '14px' ? 'secondary' : 'outline'} size="sm" onClick={() => handleFontSizeChange('14px')}>
-                        Pequeño
+                        {t('settings.fontSize.small')}
                     </Button>
                      <Button variant={fontSize === '16px' ? 'secondary' : 'outline'} size="sm" onClick={() => handleFontSizeChange('16px')}>
-                        Normal
+                        {t('settings.fontSize.normal')}
                     </Button>
                      <Button variant={fontSize === '18px' ? 'secondary' : 'outline'} size="sm" onClick={() => handleFontSizeChange('18px')}>
-                        Grande
+                        {t('settings.fontSize.large')}
                     </Button>
                      <Type className="h-6 w-6"/>
                 </div>

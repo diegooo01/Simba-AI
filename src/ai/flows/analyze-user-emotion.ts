@@ -17,21 +17,28 @@ const AnalyzeUserEmotionInputSchema = z.object({
 export type AnalyzeUserEmotionInput = z.infer<typeof AnalyzeUserEmotionInputSchema>;
 
 const AnalyzeUserEmotionOutputSchema = z.object({
-  emotion: z.enum([
-    "Tristeza",
-    "Ira/Frustración",
-    "Ansiedad/Miedo",
-    "Culpa/Vergüenza",
-    "Soledad/Vacío",
-    "Alegría/Gratitud",
-    "Confusión/Agobio/Saturación",
-    "Apatía/Desmotivación",
-    "Neutral"
-  ]).describe('The primary emotion detected in the user message.'),
+  emotion: z
+    .enum([
+      'Tristeza',
+      'Ira/Frustración',
+      'Ansiedad/Miedo',
+      'Culpa/Vergüenza',
+      'Soledad/Vacío',
+      'Alegría/Gratitud',
+      'Confusión/Agobio/Saturación',
+      'Apatía/Desmotivación',
+      'Tema no relacionado',
+      'Neutral',
+    ])
+    .describe('The primary emotion or topic detected in the user message.'),
   intensity: z
     .number()
     .describe('The intensity of the detected emotion on a scale from 0 to 1.'),
-  isCritical: z.boolean().describe('Whether the user message contains critical alert signals like suicide or self-harm mentions.'),
+  isCritical: z
+    .boolean()
+    .describe(
+      'Whether the user message contains critical alert signals like suicide or self-harm mentions.'
+    ),
 });
 export type AnalyzeUserEmotionOutput = z.infer<typeof AnalyzeUserEmotionOutputSchema>;
 
@@ -43,11 +50,14 @@ const prompt = ai.definePrompt({
   name: 'analyzeUserEmotionPrompt',
   input: {schema: AnalyzeUserEmotionInputSchema},
   output: {schema: AnalyzeUserEmotionOutputSchema},
-  prompt: `You are an AI assistant designed to analyze the emotional tone of user messages.
+  prompt: `You are an AI assistant designed to analyze the emotional tone of user messages for an emotional support chatbot.
 
 Analyze the following message and determine the primary emotion expressed and its intensity.
 The possible emotions are: "Tristeza", "Ira/Frustración", "Ansiedad/Miedo", "Culpa/Vergüenza", "Soledad/Vacío", "Alegría/Gratitud", "Confusión/Agobio/Saturación", "Apatía/Desmotivación", "Neutral".
-Intensity should be a number between 0 and 1, representing the strength of the emotion.
+
+**IMPORTANT**: If the user's message is a question about general knowledge, facts, or any topic NOT related to personal feelings or emotional state (e.g., "What is the capital of France?", "Who won the world cup?"), you MUST classify the emotion as "Tema no relacionado".
+
+Intensity should be a number between 0 and 1, representing the strength of the emotion. For "Tema no relacionado" or "Neutral", intensity can be 0.
 If there are mentions of suicide, self-harm, death ("quiero desaparecer", "no vale la pena seguir"), loss of contact with reality, threats to third parties, extreme and frequent anxiety/panic crises, total isolation, chronic insomnia, or no food intake, set isCritical to true. Otherwise, set it to false.
 
 Message: {{{message}}}
