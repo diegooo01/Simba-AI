@@ -5,7 +5,7 @@
 - UI Replication: Implement a responsive web app interface, replicating the original design of the Simba emotional support assistant.
 - Sidebar Navigation: Design a left sidebar with 'Objectives,' 'My Profile,' and 'Configuration' options below the Simba logo.
 - Emotional AI Assistant: Connect to the GPT API and implement an emotion-sensitive model that responds based on the emotional tone of user messages. The tool will make decisions based on the analysis of emotion of words and phrases.
-- Emergency Redirection: Implement redirection to a specialized care line from the Psychology Department of UNIVERSIDAD DE LOS ANDES via a link if user messages indicate intense distress.  Link to:  https://psicologia.uniandes.edu.co/en/consulting-center
+- Emergency Redirection: Implement redirection to a specialized care line from the Psychology Department of UNIVERSIDAD DE LOS ANDES via a link if user messages indicate intense distress.  Link to:  https://cienciassociales.uniandes.edu.co/centro-de-atencion-psicologica/
 
 ## Style Guidelines:
 

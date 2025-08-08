@@ -37,7 +37,7 @@ const CareLineMessage = () => (
       <p className="mt-2">
         Puedes contactar al{' '}
         <a
-          href="https://psicologia.uniandes.edu.co/en/consulting-center"
+          href="https://cienciassociales.uniandes.edu.co/centro-de-atencion-psicologica/"
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold underline"
