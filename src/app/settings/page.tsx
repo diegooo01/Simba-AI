@@ -5,18 +5,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Moon, Sun, Type } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Type, Mic } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState('16px');
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
     const initialTheme = localStorage.getItem('theme');
     const initialFontSize = localStorage.getItem('fontSize') || '16px';
+    const initialVoiceEnabled = localStorage.getItem('voice-assistant-enabled') === 'true';
 
     if (initialTheme === 'dark') {
       root.classList.add('dark');
@@ -29,7 +31,9 @@ export default function SettingsPage() {
     root.style.fontSize = initialFontSize;
     setFontSize(initialFontSize);
 
-    setIsMounted(true); // Component is now mounted and can safely render UI based on state
+    setIsVoiceEnabled(initialVoiceEnabled);
+
+    setIsMounted(true);
   }, []);
 
   const toggleDarkMode = (checked: boolean) => {
@@ -46,7 +50,11 @@ export default function SettingsPage() {
     localStorage.setItem('fontSize', size);
   }
 
-  // Avoid rendering the UI until the component has mounted and read from localStorage
+  const toggleVoiceAssistant = (checked: boolean) => {
+    setIsVoiceEnabled(checked);
+    localStorage.setItem('voice-assistant-enabled', String(checked));
+  }
+
   if (!isMounted) {
     return null;
   }
@@ -66,9 +74,9 @@ export default function SettingsPage() {
         <div className="mx-auto grid w-full max-w-6xl gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Accesibilidad</CardTitle>
+              <CardTitle>Accesibilidad y Preferencias</CardTitle>
               <CardDescription>
-                Personaliza la apariencia de la aplicación para que se adapte a tus necesidades.
+                Personaliza la apariencia y el comportamiento de la aplicación para que se adapte a tus necesidades.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
@@ -88,6 +96,23 @@ export default function SettingsPage() {
                         aria-label="Activar modo noche"
                     />
                     <Moon className="h-5 w-5"/>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="voice-assistant" className="flex flex-col gap-1">
+                  <span>Asistente de Voz</span>
+                   <span className="font-normal leading-snug text-muted-foreground">
+                    Activa para que las respuestas de Simba se lean en voz alta.
+                  </span>
+                </Label>
+                 <div className="flex items-center gap-2">
+                    <Mic className="h-5 w-5"/>
+                    <Switch
+                        id="voice-assistant"
+                        checked={isVoiceEnabled}
+                        onCheckedChange={toggleVoiceAssistant}
+                        aria-label="Activar asistente de voz"
+                    />
                 </div>
               </div>
               <div className="flex items-center justify-between">

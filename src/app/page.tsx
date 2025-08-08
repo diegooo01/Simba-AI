@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { getSimbaResponse } from '@/app/actions';
+import { getSimbaResponse, getSimbaAudioResponse } from '@/app/actions';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -186,6 +186,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -249,6 +250,13 @@ export default function Home() {
       }));
   };
 
+  const playAudio = (audioDataUri: string) => {
+    if (audioRef.current) {
+        audioRef.current.src = audioDataUri;
+        audioRef.current.play().catch(e => console.error("Error playing audio:", e));
+    }
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim() || isLoading || !activeConversationId) return;
@@ -276,6 +284,13 @@ export default function Home() {
       
       const finalMessages = [...updatedMessages, assistantMessage];
       updateConversationMessages(activeConversationId, finalMessages);
+
+      const isVoiceEnabled = localStorage.getItem('voice-assistant-enabled') === 'true';
+      if(isVoiceEnabled && !result.redirectToCareLine) {
+        const audioResult = await getSimbaAudioResponse(result.response);
+        playAudio(audioResult.audioDataUri);
+      }
+
 
     } catch (error) {
       toast({
@@ -357,6 +372,7 @@ export default function Home() {
           </form>
         </div>
       </main>
+      <audio ref={audioRef} className="hidden" />
     </div>
   );
 }
