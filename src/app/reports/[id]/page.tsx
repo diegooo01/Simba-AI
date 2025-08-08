@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -43,8 +44,9 @@ const LoadingState = () => (
     </div>
 )
 
-export default function ReportDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default function ReportDetailPage() {
+    const params = useParams();
+    const id = params.id as string;
     const [report, setReport] = useState<GenerateReportOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [conversation, setConversation] = useState<Conversation | null>(null);
