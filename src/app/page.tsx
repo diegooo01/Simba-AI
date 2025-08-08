@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bot, User, Settings, Send, Loader2, Menu, MessageSquare, LifeBuoy, FileText } from 'lucide-react';
+import { Bot, User, Settings, Send, Loader2, Menu, MessageSquare, LifeBuoy, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +20,12 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   isCareMessage?: boolean;
+}
+
+interface Conversation {
+    id: string;
+    title: string;
+    messages: Message[];
 }
 
 const CareLineMessage = () => (
@@ -99,18 +105,17 @@ const LoadingMessage = () => (
   </div>
 );
 
-const SidebarContent = () => {
-  const previousChats = [
-    'Conversación sobre ansiedad',
-    'Charla de la semana pasada',
-    'Reflexiones de hoy',
-  ];
-
+const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { conversations: Conversation[], onSelectConversation: (id: string) => void, onNewChat: () => void }) => {
   return (
     <div className="flex h-full flex-col bg-muted/40 p-4 text-foreground">
-      <div className="mb-8 flex items-center gap-2">
-        <Image src="/simba-logo.png" alt="Simba Logo" width={40} height={40} className="rounded-full" />
-        <h1 className="text-3xl font-bold">Simba</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <div className='flex items-center gap-2'>
+            <Image src="/simba-logo.png" alt="Simba Logo" width={40} height={40} className="rounded-full" />
+            <h1 className="text-3xl font-bold">Simba</h1>
+        </div>
+        <Button size="icon" variant="outline" className="rounded-full h-9 w-9" onClick={onNewChat} aria-label="Nuevo chat">
+            <Plus className="h-5 w-5"/>
+        </Button>
       </div>
       <nav className="flex flex-col gap-2">
         <Link href="/reports" passHref>
@@ -140,10 +145,10 @@ const SidebarContent = () => {
           Chats Anteriores
         </h2>
         <div className="space-y-1 p-0">
-           {previousChats.map((chat, index) => (
-             <Button key={index} variant="ghost" className="w-full justify-start gap-3 px-3 font-normal">
+           {conversations.map((chat) => (
+             <Button key={chat.id} variant="ghost" className="w-full justify-start gap-3 px-3 font-normal" onClick={() => onSelectConversation(chat.id)}>
                 <MessageSquare className="h-4 w-4" />
-                {chat}
+                <span className="truncate">{chat.title}</span>
              </Button>
            ))}
         </div>
@@ -164,30 +169,98 @@ const SidebarContent = () => {
   );
 };
 
+const createNewConversation = (): Conversation => ({
+    id: Date.now().toString(),
+    title: 'Nueva Conversación',
+    messages: [{
+        id: '1',
+        role: 'assistant',
+        content: "¡Hola! Soy Simba, tu compañero de apoyo emocional. ¿Cómo te sientes hoy?",
+    }],
+});
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: "¡Hola! Soy Simba, tu compañero de apoyo emocional. ¿Cómo te sientes hoy?",
-    },
-  ]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    try {
+        const savedConversations = localStorage.getItem('simba-chats');
+        if (savedConversations) {
+            const parsed = JSON.parse(savedConversations) as Conversation[];
+            if(parsed.length > 0) {
+              setConversations(parsed);
+              setActiveConversationId(parsed[0]?.id);
+            } else {
+                const newConv = createNewConversation();
+                setConversations([newConv]);
+                setActiveConversationId(newConv.id);
+            }
+        } else {
+          const newConv = createNewConversation();
+          setConversations([newConv]);
+          setActiveConversationId(newConv.id);
+        }
+    } catch(e) {
+        const newConv = createNewConversation();
+        setConversations([newConv]);
+        setActiveConversationId(newConv.id);
+    }
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('simba-chats', JSON.stringify(conversations));
+    }
+  }, [conversations, isMounted]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [activeConversationId, isLoading]);
+
+
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+  };
+
+  const handleNewChat = () => {
+    const newConv = createNewConversation();
+    setConversations(prev => [newConv, ...prev]);
+    setActiveConversationId(newConv.id);
+  };
+  
+  const updateConversationMessages = (conversationId: string, newMessages: Message[]) => {
+      setConversations(prev => prev.map(conv => {
+          if (conv.id === conversationId) {
+              // Create a title from the first user message if it's a new chat
+              const isNewChat = conv.messages.length <= 1 && newMessages.some(m => m.role === 'user');
+              const newTitle = isNewChat 
+                  ? newMessages.find(m => m.role === 'user')?.content.substring(0, 30) || 'Conversación'
+                  : conv.title;
+              return { ...conv, title: newTitle, messages: newMessages };
+          }
+          return conv;
+      }));
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !activeConversationId) return;
+
+    const activeConversation = conversations.find(c => c.id === activeConversationId);
+    if(!activeConversation) return;
 
     const userMessage: Message = { id: Date.now().toString(), role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...activeConversation.messages, userMessage];
+    
+    updateConversationMessages(activeConversationId, updatedMessages);
+    
     const currentInput = input;
     setInput('');
     setIsLoading(true);
@@ -200,41 +273,30 @@ export default function Home() {
         content: result.response,
         isCareMessage: result.redirectToCareLine,
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      
+      const finalMessages = [...updatedMessages, assistantMessage];
+      updateConversationMessages(activeConversationId, finalMessages);
+
     } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Ocurrió un error',
         description: 'No se pudo obtener una respuesta. Por favor, inténtalo de nuevo.',
       });
+      // Rollback user message on error
+      updateConversationMessages(activeConversationId, activeConversation.messages);
+
     } finally {
       setIsLoading(false);
     }
   };
   
-  useEffect(() => {
-    // This effect ensures that theme and font size are applied on initial load
-    // for the settings page, but it's kept here to ensure consistency if the user
-    // navigates back to home without a full reload.
-    const root = window.document.documentElement;
-    const theme = localStorage.getItem('theme');
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    const fontSize = localStorage.getItem('fontSize');
-    if (fontSize) {
-      root.style.fontSize = fontSize;
-    } else {
-      root.style.fontSize = '16px'; // Default font size
-    }
-  }, []);
+  const activeConversation = conversations.find(c => c.id === activeConversationId);
 
   return (
     <div className="flex h-screen w-full bg-background">
       <aside className="hidden w-72 flex-shrink-0 border-r bg-muted/40 md:block">
-        <SidebarContent />
+        <SidebarContent conversations={conversations} onSelectConversation={handleSelectConversation} onNewChat={handleNewChat} />
       </aside>
 
       <main className="flex flex-1 flex-col">
@@ -242,14 +304,13 @@ export default function Home() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label="Abrir menú">
                   <Menu className="h-6 w-6" />
-                  <span className="sr-only">Abrir menú</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0">
                 <SheetTitle className="sr-only">Menú</SheetTitle>
-                <SidebarContent />
+                <SidebarContent conversations={conversations} onSelectConversation={handleSelectConversation} onNewChat={handleNewChat} />
               </SheetContent>
             </Sheet>
           </div>
@@ -259,7 +320,7 @@ export default function Home() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-6 p-4 md:p-6">
-            {messages.map((message) => <ChatMessage key={message.id} message={message} />)}
+            {activeConversation?.messages.map((message) => <ChatMessage key={message.id} message={message} />)}
             {isLoading && <LoadingMessage />}
             <div ref={messagesEndRef} />
           </div>
@@ -278,13 +339,13 @@ export default function Home() {
                   handleSubmit(e as any);
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || !isMounted}
             />
             <Button
               type="submit"
               size="icon"
               className="absolute bottom-2.5 right-3 h-10 w-10 rounded-full"
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || !input.trim() || !isMounted}
               aria-label="Enviar mensaje"
             >
               {isLoading ? (
