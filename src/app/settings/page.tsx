@@ -11,10 +11,13 @@ import Link from 'next/link';
 export default function SettingsPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState('16px');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
     const initialTheme = localStorage.getItem('theme');
+    const initialFontSize = localStorage.getItem('fontSize') || '16px';
+
     if (initialTheme === 'dark') {
       root.classList.add('dark');
       setIsDarkMode(true);
@@ -22,11 +25,11 @@ export default function SettingsPage() {
       root.classList.remove('dark');
       setIsDarkMode(false);
     }
-    const initialFontSize = localStorage.getItem('fontSize');
-    if (initialFontSize) {
-      root.style.fontSize = initialFontSize;
-      setFontSize(initialFontSize);
-    }
+    
+    root.style.fontSize = initialFontSize;
+    setFontSize(initialFontSize);
+
+    setIsMounted(true); // Component is now mounted and can safely render UI based on state
   }, []);
 
   const toggleDarkMode = (checked: boolean) => {
@@ -41,6 +44,11 @@ export default function SettingsPage() {
     root.style.fontSize = size;
     setFontSize(size);
     localStorage.setItem('fontSize', size);
+  }
+
+  // Avoid rendering the UI until the component has mounted and read from localStorage
+  if (!isMounted) {
+    return null;
   }
 
   return (
@@ -77,6 +85,7 @@ export default function SettingsPage() {
                         id="dark-mode"
                         checked={isDarkMode}
                         onCheckedChange={toggleDarkMode}
+                        aria-label="Activar modo noche"
                     />
                     <Moon className="h-5 w-5"/>
                 </div>

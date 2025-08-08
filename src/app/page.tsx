@@ -31,7 +31,7 @@ const CareLineMessage = () => (
       <p className="mt-2">
         Puedes contactar al{' '}
         <a
-          href="https://cienciassociales.uniandes.edu.co/centro-de-atencion-psicologica/"
+          href="https://psicologia.uniandes.edu.co/en/consulting-center"
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold underline"
@@ -213,6 +213,9 @@ export default function Home() {
   };
   
   useEffect(() => {
+    // This effect ensures that theme and font size are applied on initial load
+    // for the settings page, but it's kept here to ensure consistency if the user
+    // navigates back to home without a full reload.
     const root = window.document.documentElement;
     const theme = localStorage.getItem('theme');
     if (theme === 'dark') {
@@ -223,6 +226,8 @@ export default function Home() {
     const fontSize = localStorage.getItem('fontSize');
     if (fontSize) {
       root.style.fontSize = fontSize;
+    } else {
+      root.style.fontSize = '16px'; // Default font size
     }
   }, []);
 
@@ -239,6 +244,7 @@ export default function Home() {
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
+                  <span className="sr-only">Abrir menú</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0">
@@ -279,7 +285,7 @@ export default function Home() {
               size="icon"
               className="absolute bottom-2.5 right-3 h-10 w-10 rounded-full"
               disabled={isLoading || !input.trim()}
-              aria-label="Send message"
+              aria-label="Enviar mensaje"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
