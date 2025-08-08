@@ -22,6 +22,7 @@ export type Message = z.infer<typeof MessageSchema>;
 
 const GenerateReportInputSchema = z.object({
   messages: z.array(MessageSchema).describe("The full list of messages in the conversation, in chronological order."),
+  language: z.string().describe("The language for the report's content (e.g., 'es', 'en')."),
 });
 export type GenerateReportInput = z.infer<typeof GenerateReportInputSchema>;
 
@@ -61,14 +62,15 @@ const generateReportPrompt = ai.definePrompt({
       You are a highly skilled psychologist AI tasked with analyzing a chat conversation to generate a detailed "Interaction Report".
       Analyze the provided message history between a user and an emotional support assistant named Simba.
       Your goal is to fill out the JSON schema with a thorough and objective analysis.
+      
+      **IMPORTANT**: The entire report, including all fields and summaries, MUST be generated in the requested language: {{language}}.
 
       **Conversation Rules to Consider:**
       - The 'id' of each message is a timestamp. Use it to determine start/end times and duration.
       - The conversation starts with an assistant message. The user's first message is the true start of the interaction.
-      - If the conversation is very short or the user stops responding, reflect this in the report. Use "No determinado" or "Inconcluso" where appropriate. Do not invent information.
-      - The report must be in Spanish.
+      - If the conversation is very short or the user stops responding, reflect this in the report. Use "No determinado" or "Inconcluso" (or their equivalents in {{language}}) where appropriate. Do not invent information.
 
-      **Analysis Guidelines:**
+      **Analysis Guidelines (in {{language}}):**
 
       1.  **General Information**:
           - \`startTime\`: Infer from the timestamp of the first *user* message.
@@ -108,7 +110,7 @@ const generateReportFlow = ai.defineFlow(
     
     // Handle case with no user messages
     if (userStartedConversation.length === 0) {
-        const startTime = new Date(parseInt(input.messages[0].id)).toLocaleString('es-ES');
+        const startTime = new Date(parseInt(input.messages[0].id)).toLocaleString(input.language);
         return {
             generalInfo: {
                 startTime: startTime,
@@ -126,7 +128,7 @@ const generateReportFlow = ai.defineFlow(
         };
     }
     
-    const { output } = await generateReportPrompt({ messages: userStartedConversation });
+    const { output } = await generateReportPrompt({ messages: userStartedConversation, language: input.language });
     if (!output) {
       throw new Error("AI failed to generate a report.");
     }

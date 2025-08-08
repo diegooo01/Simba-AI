@@ -3,6 +3,7 @@ export const translations = {
     common: {
       back: 'Volver',
       selectLanguage: 'Seleccionar idioma',
+      cancel: 'Cancelar',
     },
     sidebar: {
         newChat: 'Nuevo chat',
@@ -28,8 +29,10 @@ export const translations = {
     },
     settings: {
         title: 'Configuración',
-        cardTitle: 'Accesibilidad y Preferencias',
-        cardDescription: 'Personaliza la apariencia y el comportamiento de la aplicación para que se adapte a tus necesidades.',
+        accessibility: {
+            title: 'Accesibilidad y Preferencias',
+            description: 'Personaliza la apariencia y el comportamiento de la aplicación para que se adapte a tus necesidades.',
+        },
         darkMode: {
             label: 'Modo Noche',
             description: 'Activa un tema oscuro para reducir la fatiga visual.',
@@ -41,6 +44,16 @@ export const translations = {
             small: 'Pequeño',
             normal: 'Normal',
             large: 'Grande',
+        },
+        dataManagement: {
+            title: 'Gestión de Datos',
+            description: 'Administra los datos de tus conversaciones guardadas en este navegador.',
+        },
+        clearHistory: {
+            button: 'Eliminar historial de chats',
+            confirmTitle: '¿Estás seguro?',
+            confirmDescription: 'Esta acción no se puede deshacer. Se eliminarán permanentemente todas tus conversaciones de este navegador. La información no se podrá recuperar.',
+            confirmButton: 'Sí, eliminar historial',
         }
     },
     reports: {
@@ -118,6 +131,7 @@ export const translations = {
     common: {
       back: 'Back',
       selectLanguage: 'Select language',
+      cancel: 'Cancel',
     },
     sidebar: {
         newChat: 'New Chat',
@@ -143,8 +157,10 @@ export const translations = {
     },
     settings: {
         title: 'Settings',
-        cardTitle: 'Accessibility and Preferences',
-        cardDescription: 'Customize the appearance and behavior of the application to suit your needs.',
+        accessibility: {
+            title: 'Accessibility & Preferences',
+            description: 'Customize the appearance and behavior of the application to suit your needs.',
+        },
         darkMode: {
             label: 'Dark Mode',
             description: 'Activate a dark theme to reduce eye strain.',
@@ -156,6 +172,16 @@ export const translations = {
             small: 'Small',
             normal: 'Normal',
             large: 'Large',
+        },
+        dataManagement: {
+            title: 'Data Management',
+            description: 'Manage your conversation data saved in this browser.',
+        },
+        clearHistory: {
+            button: 'Clear chat history',
+            confirmTitle: 'Are you sure?',
+            confirmDescription: 'This action cannot be undone. This will permanently delete all your conversations from this browser. The information cannot be recovered.',
+            confirmButton: 'Yes, delete history',
         }
     },
     reports: {
@@ -233,6 +259,7 @@ export const translations = {
     common: {
       back: 'Retour',
       selectLanguage: 'Sélectionner la langue',
+      cancel: 'Annuler',
     },
     sidebar: {
         newChat: 'Nouveau chat',
@@ -258,8 +285,10 @@ export const translations = {
     },
     settings: {
         title: 'Paramètres',
-        cardTitle: 'Accessibilité et Préférences',
-        cardDescription: 'Personnalisez l\'apparence et le comportement de l\'application selon vos besoins.',
+        accessibility: {
+            title: 'Accessibilité et Préférences',
+            description: 'Personnalisez l\'apparence et le comportement de l\'application selon vos besoins.',
+        },
         darkMode: {
             label: 'Mode sombre',
             description: 'Activez un thème sombre pour réduire la fatigue oculaire.',
@@ -271,6 +300,16 @@ export const translations = {
             small: 'Petite',
             normal: 'Normale',
             large: 'Grande',
+        },
+        dataManagement: {
+            title: 'Gestion des données',
+            description: 'Gérez les données de vos conversations enregistrées dans ce navigateur.',
+        },
+        clearHistory: {
+            button: 'Effacer l\'historique des chats',
+            confirmTitle: 'Êtes-vous sûr(e) ?',
+            confirmDescription: 'Cette action est irréversible. Toutes vos conversations seront définitivement supprimées de ce navigateur. Les informations ne pourront pas être récupérées.',
+            confirmButton: 'Oui, supprimer l\'historique',
         }
     },
     reports: {
@@ -348,6 +387,7 @@ export const translations = {
     common: {
       back: 'Voltar',
       selectLanguage: 'Selecionar idioma',
+      cancel: 'Cancelar',
     },
     sidebar: {
         newChat: 'Novo chat',
@@ -373,8 +413,10 @@ export const translations = {
     },
     settings: {
         title: 'Configurações',
-        cardTitle: 'Acessibilidade e Preferências',
-        cardDescription: 'Personalize a aparência e o comportamento do aplicativo para atender às suas necessidades.',
+        accessibility: {
+            title: 'Acessibilidade e Preferências',
+            description: 'Personalize a aparência e o comportamento do aplicativo para atender às suas necessidades.',
+        },
         darkMode: {
             label: 'Modo Noturno',
             description: 'Ative um tema escuro para reduzir o cansaço visual.',
@@ -386,6 +428,16 @@ export const translations = {
             small: 'Pequeno',
             normal: 'Normal',
             large: 'Grande',
+        },
+        dataManagement: {
+            title: 'Gerenciamento de Dados',
+            description: 'Gerencie os dados de suas conversas salvos neste navegador.',
+        },
+        clearHistory: {
+            button: 'Limpar histórico de chats',
+            confirmTitle: 'Você tem certeza?',
+            confirmDescription: 'Esta ação não pode ser desfeita. Isso excluirá permanentemente todas as suas conversas deste navegador. As informações não poderão ser recuperadas.',
+            confirmButton: 'Sim, limpar histórico',
         }
     },
     reports: {
@@ -463,6 +515,7 @@ export const translations = {
     common: {
       back: '返回',
       selectLanguage: '选择语言',
+      cancel: '取消',
     },
     sidebar: {
         newChat: '新聊天',
@@ -488,8 +541,10 @@ export const translations = {
     },
     settings: {
         title: '设置',
-        cardTitle: '辅助功能和偏好',
-        cardDescription: '自定义应用程序的外观和行为以满足您的需求。',
+        accessibility: {
+            title: '辅助功能和偏好',
+            description: '自定义应用程序的外观和行为以满足您的需求。',
+        },
         darkMode: {
             label: '夜间模式',
             description: '激活深色主题以减少眼睛疲劳。',
@@ -501,6 +556,16 @@ export const translations = {
             small: '小',
             normal: '正常',
             large: '大',
+        },
+        dataManagement: {
+            title: '数据管理',
+            description: '管理此浏览器中保存的对话数据。',
+        },
+        clearHistory: {
+            button: '清除聊天记录',
+            confirmTitle: '你确定吗？',
+            confirmDescription: '此操作无法撤销。这将从此浏览器中永久删除您的所有对话。信息将无法恢复。',
+            confirmButton: '是的，删除历史记录',
         }
     },
     reports: {

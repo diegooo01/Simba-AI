@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Separator } from '@/components/ui/separator';
 import { generateReport, type GenerateReportOutput, type Message } from '@/ai/flows/generate-report';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/context/language-context';
@@ -47,7 +46,7 @@ const LoadingState = ({ t }: { t: (key: string) => string }) => (
 export default function ReportDetailPage() {
     const params = useParams();
     const id = params.id as string;
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const [report, setReport] = useState<GenerateReportOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -82,7 +81,7 @@ export default function ReportDetailPage() {
 
         const getReport = async () => {
             try {
-                const generatedReport = await generateReport({ messages: conversation.messages });
+                const generatedReport = await generateReport({ messages: conversation.messages, language: language });
                 setReport(generatedReport);
             } catch (error) {
                 console.error("Failed to generate report", error);
@@ -97,7 +96,7 @@ export default function ReportDetailPage() {
         };
 
         getReport();
-    }, [conversation, toast, t]);
+    }, [conversation, toast, t, language]);
 
 
   return (

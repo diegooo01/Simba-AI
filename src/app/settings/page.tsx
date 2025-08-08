@@ -1,16 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Moon, Sun, Type } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Type, Trash2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/language-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 export default function SettingsPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState('16px');
   const [isMounted, setIsMounted] = useState(false);
@@ -48,6 +62,12 @@ export default function SettingsPage() {
     localStorage.setItem('fontSize', size);
   }
 
+  const handleClearHistory = () => {
+    localStorage.removeItem('simba-chats');
+    // We could also show a toast here
+    router.push('/');
+  };
+
   if (!isMounted) {
     return null; // or a loading skeleton
   }
@@ -67,9 +87,9 @@ export default function SettingsPage() {
         <div className="mx-auto grid w-full max-w-6xl gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('settings.cardTitle')}</CardTitle>
+              <CardTitle>{t('settings.accessibility.title')}</CardTitle>
               <CardDescription>
-                {t('settings.cardDescription')}
+                {t('settings.accessibility.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
@@ -112,6 +132,44 @@ export default function SettingsPage() {
                      <Type className="h-6 w-6"/>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive">
+             <CardHeader>
+                <CardTitle>{t('settings.dataManagement.title')}</CardTitle>
+                <CardDescription>
+                    {t('settings.dataManagement.description')}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full sm:w-auto">
+                            <Trash2 className="h-4 w-4" />
+                            <span>{t('settings.clearHistory.button')}</span>
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>
+                           <div className="flex items-center gap-2">
+                             <AlertTriangle className="h-6 w-6 text-destructive" />
+                             {t('settings.clearHistory.confirmTitle')}
+                           </div>
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t('settings.clearHistory.confirmDescription')}
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearHistory} className="bg-destructive hover:bg-destructive/90">
+                           {t('settings.clearHistory.confirmButton')}
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </CardContent>
           </Card>
         </div>
