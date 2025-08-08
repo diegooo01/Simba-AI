@@ -1,4 +1,3 @@
-
 # Model Card: Asistente de Apoyo Emocional Simba
 
 ## Detalles del Modelo
