@@ -5,20 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Moon, Sun, Type, Mic } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Type } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState('16px');
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
     const initialTheme = localStorage.getItem('theme');
     const initialFontSize = localStorage.getItem('fontSize') || '16px';
-    const initialVoiceEnabled = localStorage.getItem('voice-assistant-enabled') === 'true';
 
     if (initialTheme === 'dark') {
       root.classList.add('dark');
@@ -30,8 +28,6 @@ export default function SettingsPage() {
     
     root.style.fontSize = initialFontSize;
     setFontSize(initialFontSize);
-
-    setIsVoiceEnabled(initialVoiceEnabled);
 
     setIsMounted(true);
   }, []);
@@ -48,11 +44,6 @@ export default function SettingsPage() {
     root.style.fontSize = size;
     setFontSize(size);
     localStorage.setItem('fontSize', size);
-  }
-
-  const toggleVoiceAssistant = (checked: boolean) => {
-    setIsVoiceEnabled(checked);
-    localStorage.setItem('voice-assistant-enabled', String(checked));
   }
 
   if (!isMounted) {
@@ -96,23 +87,6 @@ export default function SettingsPage() {
                         aria-label="Activar modo noche"
                     />
                     <Moon className="h-5 w-5"/>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="voice-assistant" className="flex flex-col gap-1">
-                  <span>Asistente de Voz</span>
-                   <span className="font-normal leading-snug text-muted-foreground">
-                    Activa para que las respuestas de Simba se lean en voz alta.
-                  </span>
-                </Label>
-                 <div className="flex items-center gap-2">
-                    <Mic className="h-5 w-5"/>
-                    <Switch
-                        id="voice-assistant"
-                        checked={isVoiceEnabled}
-                        onCheckedChange={toggleVoiceAssistant}
-                        aria-label="Activar asistente de voz"
-                    />
                 </div>
               </div>
               <div className="flex items-center justify-between">

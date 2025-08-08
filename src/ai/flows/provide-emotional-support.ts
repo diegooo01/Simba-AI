@@ -15,6 +15,7 @@ import { analyzeUserEmotion, type AnalyzeUserEmotionOutput } from './analyze-use
 
 const EmotionalSupportInputSchema = z.object({
   message: z.string().describe('The user message to analyze for emotional tone.'),
+  language: z.string().describe("The language for the assistant's response (e.g., 'Español', 'English')."),
 });
 export type EmotionalSupportInput = z.infer<typeof EmotionalSupportInputSchema>;
 
@@ -33,6 +34,7 @@ const emotionSupportPrompt = ai.definePrompt({
     input: {
       schema: z.object({
         message: z.string(),
+        language: z.string(),
         emotionAnalysis: z.object({
           emotion: z.enum([
             "Tristeza",
@@ -51,14 +53,15 @@ const emotionSupportPrompt = ai.definePrompt({
       }),
     },
     output: {schema: EmotionalSupportOutputSchema},
-    prompt: `Eres un asistente de IA de apoyo emocional llamado Simba. Tu objetivo es proporcionar respuestas empáticas, calmadas y sin juicios a los usuarios en función de su estado emocional. Responde siempre en español.
+    prompt: `Eres un asistente de IA de apoyo emocional llamado Simba. Tu objetivo es proporcionar respuestas empáticas, calmadas y sin juicios a los usuarios en función de su estado emocional. 
+Responde SIEMPRE en el idioma solicitado: {{language}}.
 
 El análisis del mensaje del usuario es:
 - Emoción: {{emotionAnalysis.emotion}}
 - Intensidad: {{emotionAnalysis.intensity}}
 - Es crítico: {{emotionAnalysis.isCritical}}
 
-Basado en este análisis y en el mensaje original del usuario, proporciona una respuesta apropiada siguiendo estas pautas:
+Basado en este análisis y en el mensaje original del usuario, proporciona una respuesta apropiada en {{language}} siguiendo estas pautas:
 
 *** PAUTAS GENERALES DE RESPUESTA ***
 - Tono: Empático, calmado y sin juicios.
@@ -86,9 +89,7 @@ Basado en este análisis y en el mensaje original del usuario, proporciona una r
 - **Apatía/Desmotivación**: Explora causas. Sugiere microacciones y metas muy pequeñas.
 
 *** ESCALAMIENTO ***
-Si la situación es crítica (emotionAnalysis.isCritical es true), tu respuesta debe ser:
-1.  Ser breve y de acompañamiento: "Estoy aquí contigo. No estás solo/a."
-2.  Inmediatamente después, establece 'redirectToCareLine' en true para mostrar la información de ayuda urgente. No intentes aconsejar más.
+Si la situación es crítica (emotionAnalysis.isCritical es true), tu respuesta debe ser breve, de acompañamiento y en el idioma correcto: "Estoy aquí contigo. No estás solo/a." o su equivalente. Inmediatamente después, establece 'redirectToCareLine' en true para mostrar la información de ayuda urgente. No intentes aconsejar más.
 
 Si la situación no es crítica, establece 'redirectToCareLine' en false.
 
@@ -107,14 +108,22 @@ const provideEmotionalSupportFlow = ai.defineFlow(
     const emotionAnalysis: AnalyzeUserEmotionOutput = await analyzeUserEmotion({ message: input.message });
 
     if (emotionAnalysis.isCritical) {
+      const criticalResponse: Record<string, string> = {
+        'Español': 'Estoy aquí contigo. No estás solo/a.',
+        'English': 'I am here with you. You are not alone.',
+        'Français': 'Je suis là avec toi. Tu n\'es pas seul(e).',
+        'Português': 'Estou aqui com você. Você não está só.',
+        '中文': '我在这里陪着你。你不是一个人。'
+      }
       return {
-        response: 'Estoy aquí contigo. No estás solo/a.',
+        response: criticalResponse[input.language] || 'I am here with you. You are not alone.',
         redirectToCareLine: true,
       };
     }
 
     const { output } = await emotionSupportPrompt({
       message: input.message,
+      language: input.language,
       emotionAnalysis: emotionAnalysis,
     });
 
@@ -123,8 +132,16 @@ const provideEmotionalSupportFlow = ai.defineFlow(
     }
 
     // Fallback response
+    const fallbackResponse: Record<string, string> = {
+        'Español': 'Estoy aquí para apoyarte. Por favor, cuéntame más sobre lo que estás pasando.',
+        'English': 'I am here to support you. Please tell me more about what you are going through.',
+        'Français': 'Je suis là pour te soutenir. S\'il te plaît, dis-m\'en plus sur ce que tu traverses.',
+        'Português': 'Estou aqui para te apoiar. Por favor, conte-me mais sobre o que você está passando.',
+        '中文': '我在这里支持你。请告诉我更多关于你正在经历的事情。'
+    }
+
     return {
-      response: 'Estoy aquí para apoyarte. Por favor, cuéntame más sobre lo que estás pasando.',
+      response: fallbackResponse[input.language] || 'I am here to support you. Please tell me more about what you are going through.',
       redirectToCareLine: false,
     };
   }

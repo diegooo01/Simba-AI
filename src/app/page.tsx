@@ -4,15 +4,16 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bot, User, Settings, Send, Loader2, Menu, MessageSquare, LifeBuoy, FileText, Plus } from 'lucide-react';
+import { Bot, User, Settings, Send, Loader2, Menu, MessageSquare, LifeBuoy, FileText, Plus, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { getSimbaResponse, getSimbaAudioResponse } from '@/app/actions';
+import { getSimbaResponse } from '@/app/actions';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -169,15 +170,53 @@ const SidebarContent = ({ conversations, onSelectConversation, onNewChat }: { co
   );
 };
 
-const createNewConversation = (): Conversation => ({
-    id: Date.now().toString(),
-    title: 'Nueva Conversación',
-    messages: [{
-        id: '1',
-        role: 'assistant',
-        content: "¡Hola! Soy Simba, tu compañero de apoyo emocional. ¿Cómo te sientes hoy?",
-    }],
-});
+const LanguageSelector = ({ language, setLanguage }: { language: string, setLanguage: (lang: string) => void }) => {
+    const languages = [
+        { code: 'Español', name: 'Español' },
+        { code: 'English', name: 'English' },
+        { code: 'Français', name: 'Français' },
+        { code: 'Português', name: 'Português' },
+        { code: '中文', name: '中文' },
+    ];
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                    <Globe className="h-[1.2rem] w-[1.2rem]" />
+                    <span className="sr-only">Seleccionar idioma</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                {languages.map((lang) => (
+                    <DropdownMenuItem key={lang.code} onSelect={() => setLanguage(lang.code)}>
+                        {lang.name}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+
+const createNewConversation = (language: string): Conversation => {
+    const welcomeMessages: Record<string, string> = {
+        'Español': '¡Hola! Soy Simba, tu compañero de apoyo emocional. ¿Cómo te sientes hoy?',
+        'English': 'Hello! I am Simba, your emotional support companion. How are you feeling today?',
+        'Français': 'Bonjour! Je suis Simba, ton compagnon de soutien émotionnel. Comment te sens-tu aujourd\'hui?',
+        'Português': 'Olá! Eu sou o Simba, seu companheiro de apoio emocional. Como você está se sentindo hoje?',
+        '中文': '你好！我是辛巴，你的情感支持伙伴。你今天感觉怎么样？',
+    };
+    return {
+        id: Date.now().toString(),
+        title: 'Nueva Conversación',
+        messages: [{
+            id: '1',
+            role: 'assistant',
+            content: welcomeMessages[language] || welcomeMessages['English'],
+        }],
+    }
+};
 
 export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -186,10 +225,14 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [language, setLanguage] = useState('Español');
+
 
   useEffect(() => {
+    const savedLanguage = localStorage.getItem('simba-language') || 'Español';
+    setLanguage(savedLanguage);
+    
     try {
         const savedConversations = localStorage.getItem('simba-chats');
         if (savedConversations) {
@@ -198,17 +241,17 @@ export default function Home() {
               setConversations(parsed);
               setActiveConversationId(parsed[0]?.id);
             } else {
-                const newConv = createNewConversation();
+                const newConv = createNewConversation(savedLanguage);
                 setConversations([newConv]);
                 setActiveConversationId(newConv.id);
             }
         } else {
-          const newConv = createNewConversation();
+          const newConv = createNewConversation(savedLanguage);
           setConversations([newConv]);
           setActiveConversationId(newConv.id);
         }
     } catch(e) {
-        const newConv = createNewConversation();
+        const newConv = createNewConversation(savedLanguage);
         setConversations([newConv]);
         setActiveConversationId(newConv.id);
     }
@@ -225,13 +268,21 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeConversationId, isLoading]);
 
+  const handleSetLanguage = (lang: string) => {
+    setLanguage(lang);
+    if(isMounted) {
+        localStorage.setItem('simba-language', lang);
+    }
+    // Optionally create a new chat when language is changed
+    handleNewChat(lang);
+  };
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
   };
 
-  const handleNewChat = () => {
-    const newConv = createNewConversation();
+  const handleNewChat = (lang = language) => {
+    const newConv = createNewConversation(lang);
     setConversations(prev => [newConv, ...prev]);
     setActiveConversationId(newConv.id);
   };
@@ -239,7 +290,6 @@ export default function Home() {
   const updateConversationMessages = (conversationId: string, newMessages: Message[]) => {
       setConversations(prev => prev.map(conv => {
           if (conv.id === conversationId) {
-              // Create a title from the first user message if it's a new chat
               const isNewChat = conv.messages.length <= 1 && newMessages.some(m => m.role === 'user');
               const newTitle = isNewChat 
                   ? newMessages.find(m => m.role === 'user')?.content.substring(0, 30) || 'Conversación'
@@ -249,13 +299,6 @@ export default function Home() {
           return conv;
       }));
   };
-
-  const playAudio = (audioDataUri: string) => {
-    if (audioRef.current) {
-        audioRef.current.src = audioDataUri;
-        audioRef.current.play().catch(e => console.error("Error playing audio:", e));
-    }
-  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -274,7 +317,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const result = await getSimbaResponse(currentInput);
+      const result = await getSimbaResponse(currentInput, language);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -284,13 +327,6 @@ export default function Home() {
       
       const finalMessages = [...updatedMessages, assistantMessage];
       updateConversationMessages(activeConversationId, finalMessages);
-
-      const isVoiceEnabled = localStorage.getItem('voice-assistant-enabled') === 'true';
-      if(isVoiceEnabled && !result.redirectToCareLine) {
-        const audioResult = await getSimbaAudioResponse(result.response);
-        playAudio(audioResult.audioDataUri);
-      }
-
 
     } catch (error) {
       toast({
@@ -315,7 +351,7 @@ export default function Home() {
       </aside>
 
       <main className="flex flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:justify-end">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -330,7 +366,9 @@ export default function Home() {
             </Sheet>
           </div>
           <p className="text-lg font-semibold md:hidden">Simba</p>
-          <div />
+          <div className="ml-auto">
+            <LanguageSelector language={language} setLanguage={handleSetLanguage} />
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto">
@@ -372,7 +410,6 @@ export default function Home() {
           </form>
         </div>
       </main>
-      <audio ref={audioRef} className="hidden" />
     </div>
   );
 }
