@@ -71,10 +71,10 @@ const generateReportPrompt = ai.definePrompt({
       **Analysis Guidelines:**
 
       1.  **General Information**:
-          - `startTime`: Infer from the timestamp of the first *user* message.
-          - `totalDuration`: Calculate the difference between the first and last message timestamps.
-          - `initialContext`: Summarize the user's first one or two messages to capture their initial problem.
-          - `initialEmotions`: List the emotions evident in the user's first message.
+          - \`startTime\`: Infer from the timestamp of the first *user* message.
+          - \`totalDuration\`: Calculate the difference between the first and last message timestamps.
+          - \`initialContext\`: Summarize the user's first one or two messages to capture their initial problem.
+          - \`initialEmotions\`: List the emotions evident in the user's first message.
 
       2.  **Emotion Analysis**:
           - Identify the main emotions expressed by the user throughout the chat. There might be one primary emotion and one or two secondary ones.
@@ -83,10 +83,10 @@ const generateReportPrompt = ai.definePrompt({
           - List the specific techniques or advice the assistant provided in response to that emotion (e.g., "Ejercicio de respiración 4-7-8", "Sugerencia de escritura expresiva").
 
       3.  **Summary**:
-          - `conversationFlow`: Write a narrative describing the conversation's progression. How did it start? What were the key turning points? How did the assistant intervene?
-          - `endEmotion`: What was the user's apparent emotional state in their last message? If they just stopped, state that it was inconclusive.
-          - `finalRecommendations`: List the final pieces of advice Simba gave.
-          - `actionTaken`: Note whether the conversation was escalated or remained at a supportive level.
+          - \`conversationFlow\`: Write a narrative describing the conversation's progression. How did it start? What were the key turning points? How did the assistant intervene?
+          - \`endEmotion\`: What was the user's apparent emotional state in their last message? If they just stopped, state that it was inconclusive.
+          - \`finalRecommendations\`: List the final pieces of advice Simba gave.
+          - \`actionTaken\`: Note whether the conversation was escalated or remained at a supportive level.
 
       **Conversation to Analyze:**
       \`\`\`json
